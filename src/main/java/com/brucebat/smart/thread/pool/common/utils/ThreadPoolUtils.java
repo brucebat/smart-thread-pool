@@ -70,6 +70,12 @@ public class ThreadPoolUtils {
     public static void modifyThreadPool(ThreadPoolExecutor threadPoolExecutor, Integer corePoolSize, Integer maxPoolSize, BlockingQueue<Runnable> workQueue) {
         threadPoolExecutor.setCorePoolSize(corePoolSize);
         threadPoolExecutor.setMaximumPoolSize(maxPoolSize);
-        // TODO 进行阻塞队列内的待处理线程迁移
+        while (!threadPoolExecutor.getQueue().isEmpty()) {
+            Runnable work = threadPoolExecutor.getQueue().poll();
+            if (Objects.nonNull(work)) {
+                workQueue.add(work);
+            }
+        }
+        // TODO 这里需要重新设置队列
     }
 }
