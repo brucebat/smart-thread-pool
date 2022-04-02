@@ -24,6 +24,7 @@ public class LocalCacheStorageService {
     private volatile static LocalCacheStorageService localCacheStorageService;
 
     private LocalCacheStorageService() {
+        // 注册监听器用于监听配置变更事件
         this.CACHE_CONTAINER = CacheBuilder.newBuilder().removalListener(new LocalThreadPoolConfigListener()).build();
     }
 
