@@ -49,6 +49,12 @@ public class ThreadPoolUtils {
         if (Objects.isNull(threadPoolExecutor) || Objects.isNull(corePoolSize) || Objects.isNull(maxPoolSize) || Objects.isNull(workQueueSize)) {
             throw new IllegalArgumentException("missing required parameters: threadPoolExecutor, corePoolSize, maxPoolSize or workQueueSize");
         }
+        if (corePoolSize > maxPoolSize) {
+            throw new IllegalArgumentException("corePoolSize cannot be greater than maxPoolSize!");
+        }
+        // TODO 需要注意以下两个问题：
+        //  1. ThreadPoolExecutor中的阻塞队列是无法进行替换的，因为这里使用了final —— 一个小猜想，是否可以继承ThreadPoolExecutor扩展出设置workQueue方法（反射？）;
+        //  2. JDK给出的阻塞队列是无法进行动态扩容的，如果想要进行扩容就需要使用自定义阻塞队列 —— 此处需要开发人员使用自定义实现可以进行动态扩容的阻塞队列;
         BlockingQueue<Runnable> oldWorkQueue = threadPoolExecutor.getQueue();
         try {
             Class<?> workQueueClass = Class.forName(oldWorkQueue.getClass().getName());
@@ -68,14 +74,15 @@ public class ThreadPoolUtils {
      * @param workQueue          待修改的工作队列
      */
     public static void modifyThreadPool(ThreadPoolExecutor threadPoolExecutor, Integer corePoolSize, Integer maxPoolSize, BlockingQueue<Runnable> workQueue) {
-        threadPoolExecutor.setCorePoolSize(corePoolSize);
+        // 优先设置最大线程数，防止设置先设置核心线程数不生效
         threadPoolExecutor.setMaximumPoolSize(maxPoolSize);
+        threadPoolExecutor.setCorePoolSize(corePoolSize);
         while (!threadPoolExecutor.getQueue().isEmpty()) {
             Runnable work = threadPoolExecutor.getQueue().poll();
             if (Objects.nonNull(work)) {
                 workQueue.add(work);
             }
         }
-        // TODO 这里需要重新设置队列
+        // TODO 基于原始的阻塞队列是无法进行设置的
     }
 }
