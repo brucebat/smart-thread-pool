@@ -25,7 +25,8 @@ public class LocalThreadPoolConfigListener implements ThreadPoolConfigListener, 
     @Override
     public void onRemoval(RemovalNotification<String, ThreadPoolConfig> notification) {
         if (RemovalCause.REPLACED.equals(notification.getCause())) {
-            // TODO 需要注意，这里只能进行被修改key的通知，无法获取到最新的被修改的值
+            // TODO 需要注意，这里只能进行被修改key的通知，无法获取到最新的被修改的值，需要注意的是
+            //  如何将进行缓存操作的逻辑放置在当前的类中而不会引起循环依赖的问题
         }
     }
 }
